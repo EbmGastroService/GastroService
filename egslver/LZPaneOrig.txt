@@ -1,0 +1,212 @@
+// created on 31.10.2007 at 00:12
+package egslver;
+import com.printer.JComponentVista;
+import java.awt.print.*;
+public class LZPane{
+	String[]K;
+	String[]M;
+	String[]LD;
+	String datum;
+	float SVBGL,SVB,StBGL,L_LB;
+	float SZ_BGL,SZ_SVB,SZ_StBGL,SZ_LB,Sum;
+	JComponentVista vista;
+	public LZPane(String[]K,String[]M,String datum){
+		this.K=K;
+		this.M=M;
+		this.datum=datum;		
+		new Form(DNA(),K,M,"dna","-");	
+		new Form(DGA(),K,M,"dga","-");	
+	}
+	String DNA(){
+		String da="dna";
+		LD=MonatDate(da);
+		SVBGL=aliLo();//fd(LD[2]);//Lohnbrutto
+		SVB=Asum();//KKBeitrag vonm Lohn
+		
+		StBGL=LStrBGL();//Lohnsteuer bemessung grundlage
+		L_LB=MonLStr();//Lohnsteuer vom Lohn
+		
+		SZ_BGL=SZ();//Sonderzahlung Bem.Grundlage
+		SZ_SVB=SZBei(da);//SonderZahlungsbeitrag
+		
+		SZ_StBGL=SZBGL();//SonderZhalung LohnSteuer bemessungs Grundlage
+		SZ_LB=SZLStr();//SonderZahlung Steuer Betrag
+		
+		Sum=sum();//Sume Abzug betrags
+		String DNA=datum+","+SVBGL+","+SVB+","+StBGL+","+L_LB+","+SZ_BGL+","+SZ_SVB+","+SZ_StBGL+","+SZ_LB+","+Sum;			
+		save(DNA,da);		
+		return DNA;
+	}
+	String DGA(){
+		String da="dga";
+		LD=MonatDate(da);
+		SVBGL=fd(LD[2]);//Lohnbrutto
+		SVB=Bsum();//KKBeitrag vonm Lohn
+		
+		StBGL=0;//LStrBGL();//Lohnsteuer bemessung grundlage
+		L_LB=0;//MonLStr();//Lohnsteuer vom Lohn
+		
+		SZ_BGL=SZ();//Sonderzahlung Bem.Grundlage
+		SZ_SVB=SZBei(da);//SonderZahlungsbeitrag
+		
+		SZ_StBGL=0;//SZBGL();//SonderZhalung LohnSteuer bemessungs Grundlage
+		SZ_LB=0;//SZLStr();//SonderZahlung Steuer Betrag
+		
+		Sum=sum();//Sume Abzug betrags		
+		String DGA=datum+","+SVBGL+","+SVB+","+StBGL+","+L_LB+","+SZ_BGL+","+SZ_SVB+","+SZ_StBGL+","+SZ_LB+","+Sum;			
+		save(DGA,da);		
+		return DGA;
+	
+	}
+	String[]lohnDate(String da){
+		String Mafile="egslv/k"+K[0]+"/"+da+"_"+M[0]+"_"+datum.substring(2,datum.length())+".lz";		
+		return open(Mafile);
+	}	
+	String[]MonatDate(String da){
+		String[]ld=lohnDate(da);
+		String[]DN=new com.options.ausTeilen().koma(ld[0]);
+		for(int i=0;i<DN.length;i++)DN[i]="";
+		for(int i=0;i<ld.length;i++){
+			if(ld[i].indexOf(datum)>-1){
+				DN=new com.options.ausTeilen().koma(ld[i]);
+			}
+		}
+		return DN;
+	}
+	void save(String dateLine,String da){
+		String file="egslv/k"+K[0]+"/lz"+da+"_"+M[0]+"_"+datum.substring(2,datum.length())+".lz";					
+ 		new com.units.save().file(file,dateLine,true);
+ 	}
+	String[]open(String file){
+ 		return new com.search.sucheDate(file).myDaten();
+ 	}
+ 	float SZ(){
+ 		String mon=datum.substring(0,2);
+ 		if(mon.equals("06")||mon.equals("12"))return aliSZ();else return 0;
+ 	}
+ 	float SZBGL(){ //Sonderzahlung Bemesungsgrundlage
+ 		String mon=datum.substring(0,2);
+ 		if(mon.equals("06")||mon.equals("12"))return aliSZ()-aliSZBei();else return 0;
+ 	}
+ 	float SZBei(String da){ 		//Sonderzahlungsbeitrag
+ 		String mon=datum.substring(0,2);
+ 		float beitrag=0;
+ 		if(mon.equals("06")||mon.equals("12")){
+ 			if(da.equals("dna"))beitrag=aliSZBei();
+ 			if(da.equals("dga"))beitrag=aliSZBei_DG()+aliSZBei();
+ 		}
+ 		return beitrag;
+ 	}
+ 	float aliSZBei(){
+ 		int i=0;
+ 		String[]mSatz=new lvstruck().masatzd();
+ 		if(M[16].indexOf("A")>-1)i=1;else if(M[16].indexOf("D")>-1) i=3; else if(M[16].indexOf("N")>-1)i=5; 		             
+ 		float gkk_satz=fd(mSatz[i])/100;
+ 		//System.out.println("satz="+gkk_satz);
+ 		return (aliSZ()*gkk_satz);
+ 	}
+ 	float aliSZBei_DG(){
+ 		int i=0;
+ 		String[]mSatz=new lvstruck().klsatzd();
+ 		if(M[16].indexOf("A")>-1)i=1;else if(M[16].indexOf("D")>-1) i=3; else if(M[16].indexOf("N")>-1)i=5; 		             
+ 		float gkk_satz=fd(mSatz[i])/100;
+ 		//System.out.println("satz="+gkk_satz);
+ 		return (aliSZ()*gkk_satz);
+ 	}
+ 	float LStrBGL(){
+ 		float lohn=fd(LD[2]);
+ 		float bgl=(lohn-Asum());//Monat Bemessung Grundlage
+ 		float sz=(lohn-fd(LD[3]))*2;
+ 		float jne=((bgl*12)+sz)/12;//Jahres Netto Einkommen
+ 		//System.out.println("Netto Einkommen="+jne+" davon SZ="+sz);
+ 		if(jne>1250)return bgl;else return 0;
+ 	}
+ 	float MonLStr(){
+ 		return StBGL*LStr();///14;
+ 	}
+ 	float SZLStr(){
+ 		String mon=datum.substring(0,2);
+ 		if(mon.equals("06")||mon.equals("12"))return SZ_StBGL*LStr();else return 0; 		
+ 	}
+ 	float sum(){
+ 		return SVB+L_LB+SZ_LB+SZ_SVB;
+ 	}
+ 	float aliLo(){
+ 		String begin=M[11];
+ 		String bt="";
+ 		String bm="";
+ 		String bj=""; 		
+ 		float lohn=fd(LD[2]);//SVBGL; 		
+ 		if(begin.length()>9){
+ 			bt=begin.substring(0,2); 			
+ 			bm=begin.substring(3,5);
+ 			bj=begin.substring(8,begin.length()); 		
+ 		}else bt="1";
+ 		String aj=datum.substring(2,datum.length());
+ 		String am=datum.substring(0,2); 		 		
+ 		if(fd(bt)>1){
+ 			if(bj.equals(aj)){
+ 				float dif=fd(am)-fd(bm);
+ 				if(dif==1){
+ 					float tagwert=lohn/30;
+ 					float AAT=30-fd(bt);
+ 					lohn=tagwert*AAT;
+ 				}
+ 				if(dif<0)lohn=0;
+ 			}
+ 		}
+ 		return lohn;
+ 	}	
+ 	float aliSZ(){
+ 		String begin=M[11];
+ 		String bm="";
+ 		String bj="";
+ 		float lang=0;
+ 		float sz=SVBGL;
+ 		if(begin.length()>9){
+ 			bm=begin.substring(3,5);
+ 			bj=begin.substring(8,begin.length());
+ 		}
+ 		String aj=datum.substring(2,datum.length());
+ 		String am=datum.substring(0,2);
+ 		//System.out.print(bm+bj+am+aj);
+ 		if(bj.equals(aj)){
+ 			lang=1+fd(am)-fd(bm);
+ 			if(lang<2){
+ 				lang=0;sz=0;
+ 			}else{
+ 				lang=(12-fd(bm))+1;
+ 				sz=(SVBGL/12)*lang;
+ 			}
+ 		}
+ 		//System.out.println(lang+bm+bj+am+aj+" "+sz);
+ 		return sz;
+ 	}	
+ 	float Bsum(){
+		float sum=Asum();
+ 		String[]DN=MonatDate("dna");
+		for(int i=3;i<DN.length;i++){
+				sum+=fd(DN[i]);
+		}			
+		return sum;
+	}
+	float Asum(){
+		float sum=0;
+		for(int i=3;i<LD.length;i++){
+				sum+=fd(LD[i]);
+		}	
+		return sum;
+	}
+	float fd(String str){
+		float ld=0;
+		try{
+			ld=Float.parseFloat(str);
+		}catch(NumberFormatException nfe){ld=0;}
+		return ld;		
+	}
+	float LStr(){
+		return new Lstr(M[13],M[16],M[11]).LStr_satz(); 		
+		
+	}
+	String f(String str){return new com.units.MyZahl().deci(Float.parseFloat(str));}
+}

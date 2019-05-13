@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jnlp href="launch.jnlp" spec="1.0+">
+    <information>
+        <title>Ebm Gastro Service Software 2017</title>
+        <vendor>EbmGastroService - Mourad El Bakry - elbakry@aon.at</vendor>
+        <homepage href=""/>
+        <description>Tisch Rechnung, Lieferung, Buchhaltung und Lohnverrechung ALL IN ONE von Mourad El Bakry 2003 - 2017</description>
+        <description kind="short">Ebm Gastro Service Software 2017</description>
+    </information>
+    <update check="always"/>
+    <security>
+<all-permissions/>
+</security>
+    <resources>
+        <j2se version="1.8+"/>
+        <jar href="EbmGastroService.jar" main="true"/>
+    </resources>
+    <application-desc main-class="main.EGS2017">
+    </application-desc>
+</jnlp>

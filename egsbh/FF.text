@@ -1,0 +1,102 @@
+// created on 30.11.2007 at 00:18
+//Author Mourad Elbakry
+//Teil Buchhaltungs programm
+
+//Einkauf Verkauf Rechnugszahlung
+
+package egsbh;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import javax.swing.border.*;
+import javax.swing.BorderFactory;
+import javax.swing.JOptionPane;
+
+public class FF{
+	JPanel consola;
+ 	JPanel[]Zeile;
+ 	JLabel label;
+ 	JTextField[]Input;
+ 	int L;
+ 	String[]DateIn,p;
+	public FF(String[]DateIn,String[]p){
+		
+	}
+	void init(){
+ 		consola=new JPanel();
+ 		consola.setLayout(new java.awt.GridLayout(2+L/2,2));
+ 		consola.setOpaque(true);		
+ 		label=new JLabel("",JLabel.CENTER);
+ 		Zeile=new JPanel[L]; 		
+ 		Input=new JTextField[L]; 		
+ 		Input[0]=new JTextField(p[0]);
+ 		for (int i=0;i<L;i++){
+ 		//	p[i]="";
+ 			Zeile[i]=new JPanel();
+ 			Zeile[i].setOpaque(true);
+ 			//Zeile[i].setBackground(new ebm.myColor("hg").getColor()); 			
+ 			Zeile[i].setBorder(new javax.swing.border.TitledBorder(null,(i+1)+" "+DateIn[i])); 			
+ 			//Zeile[i].setBorder(new javax.swing.border.TitledBorder(null,(i+1)+" "+DateIn[i])); 			
+ 			if(i>0)Input[i]=new JTextField(p[i]);
+ 			Input[i].selectAll();;
+ 			Input[i].setPreferredSize(new java.awt.Dimension(280,20)); 	
+ 			Zeile[i].add(Input[i]);//,BorderLayout.LINE_END);
+ 			consola.add(Zeile[i]);
+ 		}
+ 		consola.add(label);
+ 		//return console;
+ 	} 	
+ 	public int panel(){//String str,JPanel p){ 		
+		Object[] options ={"OK","Abbrechen"};
+   	    int erg=JOptionPane.showOptionDialog(null, consola, "Abfrage "+DateIn[0],JOptionPane.DEFAULT_OPTION,
+          JOptionPane.PLAIN_MESSAGE, null, options,Input[0]);  
+ 			if(erg==0){
+			for(int i=0;i<L;i++){
+				p[i]=""+Input[i].getText();
+			}			
+		}else erg=-1;		
+		return erg;
+	}
+	void setBorder(int i,Color color,String fehler){
+		Border redline = BorderFactory.createLineBorder(color);
+		Zeile[i].setBorder(new javax.swing.border.TitledBorder(redline,(i+1)+" "+DateIn[i]+" "+fehler));		
+	};
+		String fehler(){
+		String fehler="";
+		int x=0;
+		for(int i=0;i<L;i++){
+			p[i]=Input[i].getText();
+			DV();
+			if(p[i].length()==0){	
+				setBorder(i,Color.red,"");
+				fehler+=""+(i+1)+" ,";
+			}else setBorder(i,Color.blue,"");
+		}
+		return fehler;
+	}
+	public String[]inhalt(){		
+		int X=3;
+		if(panel()==0){		
+			for(int i=0;i<X;i++){
+				String fehler=fehler();
+				if(fehler.length()>1){		
+					label.setText("<html><font color=red><b>Ihre Eingabe ist Fehlerhaft</b><br>"+
+					                               fehler+" fehlen!"+"<br> noch "+(X-i)+" Versuchungen!!");
+					
+							
+					if(panel()<0){p=null;i++;}
+				}			
+			}			
+		}else p=null;
+		return p;
+	}
+	class CB implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			int wahl=jcb.getSelectedIndex();
+			SpWahl=wahl;Field[Data.length-1].setText(""+SpWahl);validate();
+       }
+	}
+}

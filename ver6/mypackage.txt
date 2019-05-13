@@ -1,0 +1,8 @@
+Specification-Title: Ebm Gastro Service 2006
+Specification-Version: 1.7
+Specification-Vendor: Mourad Elbakry
+Implementation-Title: gastro
+Implementation-Version: build07
+Implementation-Vendor: Mourad Elbakry
+
+Class-Path: gast05.jar
